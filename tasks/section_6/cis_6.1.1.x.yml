@@ -108,6 +108,8 @@
     - NIST800-53R5_AU-2
     - NIST800-53R5_AU-7
     - NIST800-53R5_AU-12
+  vars:
+    warn_control_id: '6.1.1.4'
   block:
     - name: "6.1.1.4 | PATCH | Ensure only one logging system is in use | Check if rsyslog is active"
       ansible.builtin.command: systemctl is-active rsyslog
@@ -121,7 +123,11 @@
       changed_when: false
       failed_when: false
 
-    - name: "6.1.1.4 | PATCH | Ensure only one logging system is in use | Fail if both of the services are active"
-      ansible.builtin.fail:
+    - name: "6.1.1.4 | PATCH | Ensure only one logging system is in use | Warn if both of the services are active"
+      ansible.builtin.debug:
         msg: "Both logging systems seem to be active! Ensure that only one logging system is in use!"
       when: rsyslog_status.stdout == 'active' and systemd_journald_status.stdout == 'active'
+
+    - name: "6.1.1.4 | PATCH | Ensure only one logging system is in use | Set warning count"
+      ansible.builtin.import_tasks:
+        file: warning_facts.yml
